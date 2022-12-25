@@ -17,14 +17,12 @@ export class AuthService {
 
     async signIn(dto: SignInDto) {
         const user = await this.userService.findOneBy({ email: dto.email });
-        if(user) {
-            const matched = await verifyPassword(user.password, dto.password);
-            if(matched) {
-                delete user.password;
-                return user;
-            };
-        }
+        if(!user) throw new BadRequestException();
         
-        throw new BadRequestException();
+        const matched = await verifyPassword(user.password, dto.password);
+        if(!matched) throw new BadRequestException()
+
+        delete user.password;
+        return user;
     }
 }

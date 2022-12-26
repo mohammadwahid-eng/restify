@@ -1,29 +1,26 @@
-import { Bookmark } from 'src/bookmarks/entities/bookmark.entity';
+import { User } from 'src/users/entities/user.entity';
 import {
   Entity,
   Column,
+  ManyToOne,
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
 } from 'typeorm';
 
-@Entity('users')
-export class User {
+@Entity('bookmarks')
+export class Bookmark {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
   @Column({ nullable: true })
-  name: string;
-
-  @Column({ unique: true })
-  email: string;
+  title: string;
 
   @Column()
-  password: string;
+  url: string;
 
-  @OneToMany(() => Bookmark, (bookmark) => bookmark.user)
-  bookmarks: Bookmark[];
+  @ManyToOne(() => User, (user) => user.id)
+  user: User;
 
   @CreateDateColumn()
   createdAt: Date;

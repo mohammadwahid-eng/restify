@@ -1,28 +1,27 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { SignInDto, SignUpDto } from './dto';
+import { RegistrationDto, LoginDto } from './dto';
 import { UsersService } from 'src/users/users.service';
 import { encodePassword, verifyPassword } from './utils';
 
 @Injectable()
 export class AuthService {
+  constructor(private readonly userService: UsersService) {}
 
-    constructor(private readonly userService: UsersService) {}
+  async registration(dto: RegistrationDto) {
+    const password = await encodePassword(dto.password);
+    const user = this.userService.create({ ...dto, password });
+    delete (await user).password;
+    return user;
+  }
 
-    async signUp(dto: SignUpDto) {
-        const password = await encodePassword(dto.password);
-        const user = this.userService.create({ ...dto, password });
-        delete (await user).password;
-        return user;
-    }
+  async login(dto: LoginDto) {
+    const user = await this.userService.findOneBy({ email: dto.email });
+    if (!user) throw new BadRequestException();
 
-    async signIn(dto: SignInDto) {
-        const user = await this.userService.findOneBy({ email: dto.email });
-        if(!user) throw new BadRequestException();
-        
-        const matched = await verifyPassword(user.password, dto.password);
-        if(!matched) throw new BadRequestException()
+    const matched = await verifyPassword(user.password, dto.password);
+    if (!matched) throw new BadRequestException();
 
-        delete user.password;
-        return user;
-    }
+    delete user.password;
+    return user;
+  }
 }

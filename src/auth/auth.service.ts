@@ -2,10 +2,16 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { RegistrationDto, LoginDto } from './dto';
 import { UsersService } from 'src/users/users.service';
 import { encodePassword, verifyPassword } from './utils';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly userService: UsersService) {}
+  constructor(
+    private readonly userService: UsersService,
+    private readonly jwtService: JwtService,
+    private readonly config: ConfigService,
+  ) {}
 
   async registration(dto: RegistrationDto) {
     const password = await encodePassword(dto.password);
@@ -22,6 +28,16 @@ export class AuthService {
     if (!matched) throw new BadRequestException();
 
     delete user.password;
-    return user;
+    const accessToken = await this.signToken(user.id, user.email);
+    return { accessToken };
+  }
+
+  async signToken(userId: number, email: string): Promise<string> {
+    const payload = { sub: userId, email };
+    const secret = this.config.get('JWT_SECRET');
+    return this.jwtService.signAsync(payload, {
+      expiresIn: '15m',
+      secret,
+    });
   }
 }

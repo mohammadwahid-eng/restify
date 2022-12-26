@@ -4,9 +4,11 @@ import { UsersModule } from './users/users.module';
 import { BookmarksModule } from './bookmarks/bookmarks.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { entities } from './typeorm';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
     UsersModule,
     BookmarksModule,
@@ -22,4 +24,4 @@ import { entities } from './typeorm';
     }),
   ],
 })
-export class AppModule { }
+export class AppModule {}
